@@ -95,18 +95,34 @@
                 const img = new Image();
                 img.src = e.target.result;
 
-                // Use QR Code decoding library to get the payload (e.g., jsQR or other library)
+                // Simulate decoding process
                 img.onload = function () {
-                    // Simulated decoding (replace with actual decoding logic)
-                    const simulatedDecodedPayload = '{"urls": ["https://example.com", "https://another.com"]}';
+                    // Replace this with actual decoding logic
+                    const simulatedDecodedPayload = '{"urls": ["https://example.com?param1=value1&param2=value2", "https://another.com"]}';
                     const data = JSON.parse(simulatedDecodedPayload);
 
                     if (data.urls && Array.isArray(data.urls)) {
                         data.urls.forEach(url => {
+                            // Create button for each URL
                             const linkButton = document.createElement('button');
                             linkButton.textContent = url;
                             linkButton.onclick = () => window.open(url, '_blank');
                             decodedLinksContainer.appendChild(linkButton);
+
+                            // Display parsed query parameters
+                            const urlObj = new URL(url);
+                            const params = urlObj.searchParams;
+                            const paramDiv = document.createElement('div');
+                            paramDiv.textContent = `Parameters for ${urlObj.hostname}:`;
+
+                            const ul = document.createElement('ul');
+                            params.forEach((value, key) => {
+                                const li = document.createElement('li');
+                                li.textContent = `${key}: ${value}`;
+                                ul.appendChild(li);
+                            });
+                            paramDiv.appendChild(ul);
+                            decodedLinksContainer.appendChild(paramDiv);
                         });
                     } else {
                         alert('Invalid QR Code content.');
