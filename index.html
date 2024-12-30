@@ -3,87 +3,83 @@
 <head>
   <meta charset="UTF-8" />
   <title>QR Code Decoder & Generator</title>
-  <!-- 若需要更豐富的樣式，可考慮載入 Bootstrap 或其他 CSS Framework -->
+  <!-- 載入 Bootstrap CSS -->
+  <link
+    rel="stylesheet"
+    href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
+  />
+  <!-- 載入 qrcode.js 產生函式庫 -->
+  <script
+    src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"
+    defer
+  ></script>
+
   <style>
-    /* 簡易樣式示範 */
-    .container {
-      max-width: 600px;
-      margin: 0 auto;
-      padding: 20px;
-      font-family: sans-serif;
-    }
-    .section {
-      border: 1px solid #ccc;
-      padding: 15px;
-      margin-bottom: 20px;
-      border-radius: 6px;
-    }
-    .section h2 {
-      margin-top: 0;
-    }
-    /* 連結按鈕樣式 */
+    /* 可在此處針對細節做客製化 */
     .link-button {
-      display: block;
-      width: 100%;
-      padding: 10px 15px;
-      margin: 5px 0;
-      background-color: #3498db;
-      color: #fff;
-      border: none;
-      border-radius: 4px;
-      cursor: pointer;
-      text-align: left;
-      font-size: 16px;
-      transition: background-color 0.2s;
+      margin-bottom: 8px;
     }
-    .link-button:hover {
-      background-color: #2980b9;
+
+    /* 讓下載連結看起來更像按鈕 */
+    #download-link.btn.btn-success {
+      margin-top: 1rem;
     }
-    /* 產生 QR code 區域 */
-    #qrcode {
-      margin-top: 15px;
-    }
-    /* 隱藏元素的簡單方式 */
-    .hidden {
-      display: none;
+
+    /* 讓 textarea 高度再大一些 */
+    #url-input {
+      min-height: 120px;
     }
   </style>
 </head>
-<body>
-<div class="container">
-  <h1>QR Code Decoder & Generator</h1>
+<body class="bg-light">
 
-  <!-- 1. 解析區域：若有 data 參數，就顯示連結 -->
-  <div id="decoded-section" class="section hidden">
-    <h2>掃描結果</h2>
-    <div id="info-section">
-      <p>產生時間：<span id="gen-time"></span></p>
-      <p>網址數量：<span id="url-count"></span></p>
+<div class="container py-5">
+  <h1 class="mb-4 text-center">QR Code Decoder & Generator</h1>
+
+  <!-- 解析區域：若有 data 參數，就顯示連結 -->
+  <div id="decoded-section" class="card shadow-sm mb-4 d-none">
+    <div class="card-body">
+      <h2 class="h4">掃描結果</h2>
+      <hr />
+      <div id="info-section" class="mb-3">
+        <p>產生時間：<span id="gen-time"></span></p>
+        <p>網址數量：<span id="url-count"></span></p>
+      </div>
+      <div id="links-container"></div>
     </div>
-    <div id="links-container"></div>
-    <!-- 若要顯示更多資訊，可自行擴充 -->
   </div>
 
-  <!-- 2. 產生 QR code 區域：若沒有 data 參數，就顯示這個 -->
-  <div id="generator-section" class="section hidden">
-    <h2>產生特殊 QR code</h2>
-    <p>在下方輸入多個網址（每行一個），然後按「產生」即可：</p>
-    <textarea id="url-input" rows="5" style="width: 100%;" placeholder="例如：
+  <!-- 產生 QR code 區域：若沒有 data 參數，就顯示這個 -->
+  <div id="generator-section" class="card shadow-sm mb-4 d-none">
+    <div class="card-body">
+      <h2 class="h4">產生特殊 QR code</h2>
+      <p class="mb-2">在下方輸入多個網址（每行一個），然後按「產生」即可：</p>
+      <textarea
+        id="url-input"
+        class="form-control"
+        placeholder="例如：
 https://www.google.com
 https://github.com
-https://..."></textarea>
-    <br /><br />
-    <button id="btn-generate">產生 QR code</button>
-    <div id="qrcode"></div>
-    <a id="download-link" href="#" download="qrcode.png" class="hidden">下載 QR code</a>
+https://..."
+      ></textarea>
+      <button id="btn-generate" class="btn btn-primary mt-3 w-100">
+        產生 QR code
+      </button>
+      <div class="d-flex justify-content-center my-4" id="qrcode"></div>
+      <a
+        id="download-link"
+        href="#"
+        download="qrcode.png"
+        class="btn btn-success w-100 d-none"
+      >
+        下載 QR code
+      </a>
+    </div>
   </div>
 </div>
 
-<!-- 載入 QRCode 產生函式庫 -->
-<script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
-
 <script>
-(function(){
+(function() {
   // 1. 先檢查網址中是否有 data=xxxx 參數
   const urlParams = new URLSearchParams(window.location.search);
   const dataParam = urlParams.get('data');
@@ -97,8 +93,8 @@ https://..."></textarea>
 
   if (dataParam) {
     // 有 data 參數 -> 進入「解析模式」
-    decodedSection.classList.remove('hidden');   // 顯示
-    generatorSection.classList.add('hidden');    // 隱藏
+    decodedSection.classList.remove('d-none'); // 顯示
+    generatorSection.classList.add('d-none');  // 隱藏
 
     try {
       // 做 decode：先 URL decode，再 base64 decode，再 JSON parse
@@ -107,51 +103,53 @@ https://..."></textarea>
       const dataObj = JSON.parse(jsonStr);
 
       // 顯示附加資訊
-      document.getElementById('gen-time').textContent = dataObj.generatedTime || '未知';
-      document.getElementById('url-count').textContent = (dataObj.urls || []).length;
+      document.getElementById('gen-time').textContent =
+        dataObj.generatedTime || '未知';
+      document.getElementById('url-count').textContent = (
+        dataObj.urls || []
+      ).length;
 
       // 生成按鈕
       const linksContainer = document.getElementById('links-container');
       (dataObj.urls || []).forEach((link, index) => {
         const btn = document.createElement('button');
-        btn.classList.add('link-button');
+        btn.classList.add('btn', 'btn-info', 'w-100', 'link-button');
         btn.textContent = `網址 ${index + 1}: ${link}`;
         btn.onclick = () => {
           window.open(link, '_blank');
         };
         linksContainer.appendChild(btn);
       });
-
-    } catch(err) {
+    } catch (err) {
       console.error('解析失敗: ', err);
-      // 你可以在頁面顯示錯誤訊息或給提示
       const linksContainer = document.getElementById('links-container');
-      linksContainer.textContent = '無法解析此 QR code 資訊，可能已損壞或內容不完整。';
+      linksContainer.textContent =
+        '無法解析此 QR code 資訊，可能已損壞或內容不完整。';
     }
-
   } else {
     // 無 data 參數 -> 進入「產生 QR code 模式」
-    generatorSection.classList.remove('hidden');  // 顯示
-    decodedSection.classList.add('hidden');       // 隱藏
+    generatorSection.classList.remove('d-none'); // 顯示
+    decodedSection.classList.add('d-none');      // 隱藏
 
     // 綁定產生QR code按鈕事件
     btnGenerate.addEventListener('click', () => {
       const inputVal = document.getElementById('url-input').value.trim();
       if (!inputVal) {
-        alert("請至少輸入一個網址再產生 QR code");
+        alert('請至少輸入一個網址再產生 QR code');
         return;
       }
 
       // 拆成多行網址
-      const urls = inputVal.split('\n')
-                          .map(u => u.trim())
-                          .filter(u => u !== '');
+      const urls = inputVal
+        .split('\n')
+        .map(u => u.trim())
+        .filter(u => u !== '');
 
       // 組成要放進 QR code 的資料物件
       const dataObj = {
         urls: urls,
         // 產生時間可依照你想要的格式處理，這邊只是範例
-        generatedTime: new Date().toISOString().replace('T',' ').split('.')[0]
+        generatedTime: new Date().toISOString().replace('T', ' ').split('.')[0]
       };
 
       // JSON -> Base64 -> URI Encode
@@ -160,17 +158,16 @@ https://..."></textarea>
       const encodedData = encodeURIComponent(base64Str);
 
       // 組成最終掃描URL
-      // 將此 URL 放進 QR code，以便掃描後自動跳轉到同一個頁面來解析
       const finalUrl = `https://davidchen0970.github.io/QRcodeDecoder/?data=${encodedData}`;
 
       // 清空舊的 QR code
       qrcodeContainer.innerHTML = "";
 
-      // 使用 qrcode.js 產生新的 QR code
+      // 使用 qrcode.js 產生新的 QR code（放大到 400 x 400）
       new QRCode(qrcodeContainer, {
         text: finalUrl,
-        width: 256,
-        height: 256,
+        width: 400,
+        height: 400,
       });
 
       // 延遲一下再提供下載連結（因為 QR code 需要時間 render）
@@ -179,12 +176,19 @@ https://..."></textarea>
         if (canvas) {
           // 轉為 Base64 圖片
           downloadLink.href = canvas.toDataURL("image/png");
-          downloadLink.classList.remove('hidden');
+          downloadLink.classList.remove('d-none');
         }
       }, 500);
     });
   }
 })();
 </script>
+
+<!-- 載入 Bootstrap JS（可選，若你需要更多互動元件才需要） -->
+<script
+  src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"
+  defer
+></script>
+
 </body>
 </html>
