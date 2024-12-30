@@ -59,7 +59,7 @@
             }
 
             // Create a JSON payload with a redirect URL
-            const payload = `https://davidchen0970.github.io/QRcodeDecoder/viewer.html/?data=${encodeURIComponent(JSON.stringify({ urls }))}`;
+            const payload = `https://davidchen0970.github.io/QRcodeDecoder/?data=${encodeURIComponent(JSON.stringify({ urls }))}`;
 
             // Generate QR Code
             QRCode.toCanvas(payload, { width: 256 }, (err, canvas) => {
