@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>QR Code Decoder</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            text-align: center;
+        }
+        .link-buttons {
+            margin-top: 20px;
+        }
+        button {
+            margin: 10px;
+            padding: 10px 20px;
+            font-size: 16px;
+        }
+        .error {
+            color: red;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <h1>QR Code Decoder</h1>
+
+    <!-- Instructions -->
+    <p>Upload a QR Code or pass data via URL to decode multiple links.</p>
+
+    <!-- File Upload for QR Code -->
+    <div>
+        <input type="file" id="qr-upload" accept="image/*">
+        <button onclick="decodeQRCode()">Decode QR Code</button>
+    </div>
+
+    <!-- Decoded Links Display -->
+    <div class="link-buttons" id="link-buttons"></div>
+
+    <div class="error" id="error-message"></div>
+
+    <script>
+        // Helper: Get URL parameters
+        function getQueryParam(param) {
+            const urlParams = new URLSearchParams(window.location.search);
+            return urlParams.get(param);
+        }
+
+        // Render buttons from parsed URLs
+        function renderLinks(urls) {
+            const linkButtons = document.getElementById('link-buttons');
+            linkButtons.innerHTML = '';
+
+            if (!urls || !Array.isArray(urls) || urls.length === 0) {
+                document.getElementById('error-message').textContent = 'No valid URLs found.';
+                return;
+            }
+
+            urls.forEach(url => {
+                const button = document.createElement('button');
+                button.textContent = url;
+                button.onclick = () => window.open(url, '_blank');
+                linkButtons.appendChild(button);
+            });
+        }
+
+        // Decode QR Code from uploaded file
+        function decodeQRCode() {
+            const fileInput = document.getElementById('qr-upload');
+            const file = fileInput.files[0];
+            const errorMessage = document.getElementById('error-message');
+
+            errorMessage.textContent = '';
+
+            if (!file) {
+                errorMessage.textContent = 'Please upload a QR Code image.';
+                return;
+            }
+
+            const reader = new FileReader();
+            reader.onload = function (e) {
+                const img = new Image();
+                img.src = e.target.result;
+
+                // Use a library like jsQR to decode the image
+                img.onload = function () {
+                    // Simulated decoding (replace with actual decoding logic)
+                    const simulatedDecodedPayload = '{"urls": ["https://example.com", "https://another.com"]}';
+                    const data = JSON.parse(simulatedDecodedPayload);
+
+                    if (data.urls && Array.isArray(data.urls)) {
+                        renderLinks(data.urls);
+                    } else {
+                        errorMessage.textContent = 'Invalid QR Code content.';
+                    }
+                };
+            };
+            reader.readAsDataURL(file);
+        }
+
+        // Check for data parameter in URL and decode
+        document.addEventListener('DOMContentLoaded', () => {
+            const dataParam = getQueryParam('data');
+
+            if (dataParam) {
+                try {
+                    const data = JSON.parse(decodeURIComponent(dataParam));
+                    renderLinks(data.urls);
+                } catch (error) {
+                    document.getElementById('error-message').textContent = 'Failed to parse data parameter.';
+                }
+            }
+        });
+    </script>
+</body>
+</html>

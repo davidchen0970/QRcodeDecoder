@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Multi-Link QR Code Generator</title>
+    <script src="https://cdn.jsdelivr.net/npm/qrcode/build/qrcode.min.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            text-align: center;
+        }
+        .qr-container {
+            margin-top: 20px;
+        }
+        .links-container {
+            margin-top: 20px;
+        }
+        button {
+            margin: 10px;
+            padding: 10px 20px;
+            font-size: 16px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Multi-Link QR Code Generator</h1>
+    
+    <!-- Input for URLs -->
+    <div>
+        <textarea id="urls" rows="5" cols="50" placeholder="Enter URLs separated by commas..."></textarea>
+        <br>
+        <button onclick="generateQRCode()">Generate QR Code</button>
+    </div>
+
+    <!-- QR Code Display -->
+    <div class="qr-container" id="qr-container"></div>
+
+    <!-- QR Code Upload and Decode -->
+    <div class="qr-upload">
+        <h2>Upload and Decode QR Code</h2>
+        <input type="file" id="qr-upload" accept="image/*">
+        <button onclick="decodeQRCode()">Decode QR Code</button>
+        <div id="decoded-links" class="links-container"></div>
+    </div>
+
+    <script>
+        // Generate QR Code
+        function generateQRCode() {
+            const urlsInput = document.getElementById('urls').value;
+            const urls = urlsInput.split(',').map(url => url.trim());
+            const qrContainer = document.getElementById('qr-container');
+            qrContainer.innerHTML = '';
+
+            if (urls.length === 0 || !urls[0]) {
+                alert('Please enter at least one URL.');
+                return;
+            }
+
+            // Create a JSON payload with a redirect URL
+            const payload = `https://davidchen0970.github.io/QRcodeDecoder/viewer.html/?data=${encodeURIComponent(JSON.stringify({ urls }))}`;
+
+            // Generate QR Code
+            QRCode.toCanvas(payload, { width: 256 }, (err, canvas) => {
+                if (err) {
+                    console.error(err);
+                    return;
+                }
+                qrContainer.appendChild(canvas);
+
+                // Add a download link
+                const downloadLink = document.createElement('a');
+                downloadLink.href = canvas.toDataURL('image/png');
+                downloadLink.download = 'qr-code.png';
+                downloadLink.textContent = 'Download QR Code';
+                qrContainer.appendChild(downloadLink);
+            });
+        }
+
+        // Decode QR Code (Using External Library like qrcode-reader.js for full functionality)
+        function decodeQRCode() {
+            const fileInput = document.getElementById('qr-upload');
+            const file = fileInput.files[0];
+            const decodedLinksContainer = document.getElementById('decoded-links');
+            decodedLinksContainer.innerHTML = '';
+
+            if (!file) {
+                alert('Please upload a QR Code image.');
+                return;
+            }
+
+            const reader = new FileReader();
+            reader.onload = function (e) {
+                const img = new Image();
+                img.src = e.target.result;
+
+                // Use QR Code decoding library to get the payload (e.g., jsQR or other library)
+                img.onload = function () {
+                    // Simulated decoding (replace with actual decoding logic)
+                    const simulatedDecodedPayload = '{"urls": ["https://example.com", "https://another.com"]}';
+                    const data = JSON.parse(simulatedDecodedPayload);
+
+                    if (data.urls && Array.isArray(data.urls)) {
+                        data.urls.forEach(url => {
+                            const linkButton = document.createElement('button');
+                            linkButton.textContent = url;
+                            linkButton.onclick = () => window.open(url, '_blank');
+                            decodedLinksContainer.appendChild(linkButton);
+                        });
+                    } else {
+                        alert('Invalid QR Code content.');
+                    }
+                };
+            };
+            reader.readAsDataURL(file);
+        }
+    </script>
+</body>
+</html>
