@@ -1,136 +1,190 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="zh-TW">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Multi-Link QR Code Generator</title>
-    <script src="https://cdn.jsdelivr.net/npm/qrcode/build/qrcode.min.js"></script>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            margin: 20px;
-            text-align: center;
-        }
-        .qr-container {
-            margin-top: 20px;
-        }
-        .links-container {
-            margin-top: 20px;
-        }
-        button {
-            margin: 10px;
-            padding: 10px 20px;
-            font-size: 16px;
-        }
-    </style>
+  <meta charset="UTF-8" />
+  <title>QR Code Decoder & Generator</title>
+  <!-- 若需要更豐富的樣式，可考慮載入 Bootstrap 或其他 CSS Framework -->
+  <style>
+    /* 簡易樣式示範 */
+    .container {
+      max-width: 600px;
+      margin: 0 auto;
+      padding: 20px;
+      font-family: sans-serif;
+    }
+    .section {
+      border: 1px solid #ccc;
+      padding: 15px;
+      margin-bottom: 20px;
+      border-radius: 6px;
+    }
+    .section h2 {
+      margin-top: 0;
+    }
+    /* 連結按鈕樣式 */
+    .link-button {
+      display: block;
+      width: 100%;
+      padding: 10px 15px;
+      margin: 5px 0;
+      background-color: #3498db;
+      color: #fff;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      text-align: left;
+      font-size: 16px;
+      transition: background-color 0.2s;
+    }
+    .link-button:hover {
+      background-color: #2980b9;
+    }
+    /* 產生 QR code 區域 */
+    #qrcode {
+      margin-top: 15px;
+    }
+    /* 隱藏元素的簡單方式 */
+    .hidden {
+      display: none;
+    }
+  </style>
 </head>
 <body>
-    <h1>Multi-Link QR Code Generator</h1>
-    
-    <!-- Input for URLs -->
-    <div>
-        <textarea id="urls" rows="5" cols="50" placeholder="Enter URLs separated by commas..."></textarea>
-        <br>
-        <button onclick="generateQRCode()">Generate QR Code</button>
+<div class="container">
+  <h1>QR Code Decoder & Generator</h1>
+
+  <!-- 1. 解析區域：若有 data 參數，就顯示連結 -->
+  <div id="decoded-section" class="section hidden">
+    <h2>掃描結果</h2>
+    <div id="info-section">
+      <p>產生時間：<span id="gen-time"></span></p>
+      <p>網址數量：<span id="url-count"></span></p>
     </div>
+    <div id="links-container"></div>
+    <!-- 若要顯示更多資訊，可自行擴充 -->
+  </div>
 
-    <!-- QR Code Display -->
-    <div class="qr-container" id="qr-container"></div>
+  <!-- 2. 產生 QR code 區域：若沒有 data 參數，就顯示這個 -->
+  <div id="generator-section" class="section hidden">
+    <h2>產生特殊 QR code</h2>
+    <p>在下方輸入多個網址（每行一個），然後按「產生」即可：</p>
+    <textarea id="url-input" rows="5" style="width: 100%;" placeholder="例如：
+https://www.google.com
+https://github.com
+https://..."></textarea>
+    <br /><br />
+    <button id="btn-generate">產生 QR code</button>
+    <div id="qrcode"></div>
+    <a id="download-link" href="#" download="qrcode.png" class="hidden">下載 QR code</a>
+  </div>
+</div>
 
-    <!-- QR Code Upload and Decode -->
-    <div class="qr-upload">
-        <h2>Upload and Decode QR Code</h2>
-        <input type="file" id="qr-upload" accept="image/*">
-        <button onclick="decodeQRCode()">Decode QR Code</button>
-        <div id="decoded-links" class="links-container"></div>
-    </div>
+<!-- 載入 QRCode 產生函式庫 -->
+<script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
 
-    <script>
-        // Generate QR Code
-        function generateQRCode() {
-            const urlsInput = document.getElementById('urls').value;
-            const urls = urlsInput.split(',').map(url => url.trim());
-            const qrContainer = document.getElementById('qr-container');
-            qrContainer.innerHTML = '';
+<script>
+(function(){
+  // 1. 先檢查網址中是否有 data=xxxx 參數
+  const urlParams = new URLSearchParams(window.location.search);
+  const dataParam = urlParams.get('data');
 
-            if (urls.length === 0 || !urls[0]) {
-                alert('Please enter at least one URL.');
-                return;
-            }
+  // 取得介面元素
+  const decodedSection = document.getElementById('decoded-section');
+  const generatorSection = document.getElementById('generator-section');
+  const btnGenerate = document.getElementById('btn-generate');
+  const qrcodeContainer = document.getElementById('qrcode');
+  const downloadLink = document.getElementById('download-link');
 
-            // Create a JSON payload with a redirect URL
-            const payload = `https://davidchen0970.github.io/QRcodeDecoder/?data=${encodeURIComponent(JSON.stringify({ urls }))}`;
+  if (dataParam) {
+    // 有 data 參數 -> 進入「解析模式」
+    decodedSection.classList.remove('hidden');   // 顯示
+    generatorSection.classList.add('hidden');    // 隱藏
 
-            // Generate QR Code
-            QRCode.toCanvas(payload, { width: 256 }, (err, canvas) => {
-                if (err) {
-                    console.error(err);
-                    return;
-                }
-                qrContainer.appendChild(canvas);
+    try {
+      // 做 decode：先 URL decode，再 base64 decode，再 JSON parse
+      const base64Decoded = decodeURIComponent(dataParam);
+      const jsonStr = atob(base64Decoded);
+      const dataObj = JSON.parse(jsonStr);
 
-                // Add a download link
-                const downloadLink = document.createElement('a');
-                downloadLink.href = canvas.toDataURL('image/png');
-                downloadLink.download = 'qr-code.png';
-                downloadLink.textContent = 'Download QR Code';
-                qrContainer.appendChild(downloadLink);
-            });
+      // 顯示附加資訊
+      document.getElementById('gen-time').textContent = dataObj.generatedTime || '未知';
+      document.getElementById('url-count').textContent = (dataObj.urls || []).length;
+
+      // 生成按鈕
+      const linksContainer = document.getElementById('links-container');
+      (dataObj.urls || []).forEach((link, index) => {
+        const btn = document.createElement('button');
+        btn.classList.add('link-button');
+        btn.textContent = `網址 ${index + 1}: ${link}`;
+        btn.onclick = () => {
+          window.open(link, '_blank');
+        };
+        linksContainer.appendChild(btn);
+      });
+
+    } catch(err) {
+      console.error('解析失敗: ', err);
+      // 你可以在頁面顯示錯誤訊息或給提示
+      const linksContainer = document.getElementById('links-container');
+      linksContainer.textContent = '無法解析此 QR code 資訊，可能已損壞或內容不完整。';
+    }
+
+  } else {
+    // 無 data 參數 -> 進入「產生 QR code 模式」
+    generatorSection.classList.remove('hidden');  // 顯示
+    decodedSection.classList.add('hidden');       // 隱藏
+
+    // 綁定產生QR code按鈕事件
+    btnGenerate.addEventListener('click', () => {
+      const inputVal = document.getElementById('url-input').value.trim();
+      if (!inputVal) {
+        alert("請至少輸入一個網址再產生 QR code");
+        return;
+      }
+
+      // 拆成多行網址
+      const urls = inputVal.split('\n')
+                          .map(u => u.trim())
+                          .filter(u => u !== '');
+
+      // 組成要放進 QR code 的資料物件
+      const dataObj = {
+        urls: urls,
+        // 產生時間可依照你想要的格式處理，這邊只是範例
+        generatedTime: new Date().toISOString().replace('T',' ').split('.')[0]
+      };
+
+      // JSON -> Base64 -> URI Encode
+      const jsonStr = JSON.stringify(dataObj);
+      const base64Str = btoa(jsonStr);
+      const encodedData = encodeURIComponent(base64Str);
+
+      // 組成最終掃描URL
+      // 將此 URL 放進 QR code，以便掃描後自動跳轉到同一個頁面來解析
+      const finalUrl = `https://davidchen0970.github.io/QRcodeDecoder/?data=${encodedData}`;
+
+      // 清空舊的 QR code
+      qrcodeContainer.innerHTML = "";
+
+      // 使用 qrcode.js 產生新的 QR code
+      new QRCode(qrcodeContainer, {
+        text: finalUrl,
+        width: 256,
+        height: 256,
+      });
+
+      // 延遲一下再提供下載連結（因為 QR code 需要時間 render）
+      setTimeout(() => {
+        const canvas = qrcodeContainer.querySelector('canvas');
+        if (canvas) {
+          // 轉為 Base64 圖片
+          downloadLink.href = canvas.toDataURL("image/png");
+          downloadLink.classList.remove('hidden');
         }
-
-        // Decode QR Code (Using External Library like qrcode-reader.js for full functionality)
-        function decodeQRCode() {
-            const fileInput = document.getElementById('qr-upload');
-            const file = fileInput.files[0];
-            const decodedLinksContainer = document.getElementById('decoded-links');
-            decodedLinksContainer.innerHTML = '';
-
-            if (!file) {
-                alert('Please upload a QR Code image.');
-                return;
-            }
-
-            const reader = new FileReader();
-            reader.onload = function (e) {
-                const img = new Image();
-                img.src = e.target.result;
-
-                // Simulate decoding process
-                img.onload = function () {
-                    // Replace this with actual decoding logic
-                    const simulatedDecodedPayload = '{"urls": ["https://example.com?param1=value1&param2=value2", "https://another.com"]}';
-                    const data = JSON.parse(simulatedDecodedPayload);
-
-                    if (data.urls && Array.isArray(data.urls)) {
-                        data.urls.forEach(url => {
-                            // Create button for each URL
-                            const linkButton = document.createElement('button');
-                            linkButton.textContent = url;
-                            linkButton.onclick = () => window.open(url, '_blank');
-                            decodedLinksContainer.appendChild(linkButton);
-
-                            // Display parsed query parameters
-                            const urlObj = new URL(url);
-                            const params = urlObj.searchParams;
-                            const paramDiv = document.createElement('div');
-                            paramDiv.textContent = `Parameters for ${urlObj.hostname}:`;
-
-                            const ul = document.createElement('ul');
-                            params.forEach((value, key) => {
-                                const li = document.createElement('li');
-                                li.textContent = `${key}: ${value}`;
-                                ul.appendChild(li);
-                            });
-                            paramDiv.appendChild(ul);
-                            decodedLinksContainer.appendChild(paramDiv);
-                        });
-                    } else {
-                        alert('Invalid QR Code content.');
-                    }
-                };
-            };
-            reader.readAsDataURL(file);
-        }
-    </script>
+      }, 500);
+    });
+  }
+})();
+</script>
 </body>
 </html>
