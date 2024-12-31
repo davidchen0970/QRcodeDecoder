@@ -24,3 +24,41 @@ a {
 a:hover {
   text-decoration: none;
 }
+
+
+  .snowflake {
+    position: absolute;
+    top: -10px;
+    font-size: 1rem;
+    color: white;
+    opacity: 0.8;
+    animation: fall linear infinite;
+  }
+
+  @keyframes fall {
+    0% {
+      transform: translateY(0) translateX(0);
+      opacity: 0.8;
+    }
+    100% {
+      transform: translateY(95vh) translateX(20px);
+      opacity: 0.2;
+    }
+  }
+
+  .christmas-tree {
+    text-align: center;
+    font-family: monospace;
+    color: green;
+    margin-top: 20vh;
+  }
+
+  .christmas-tree pre {
+    display: inline-block;
+    line-height: 1.2;
+  }
+
+  .message {
+    margin-top: 20px;
+    font-size: 1.5rem;
+  }
