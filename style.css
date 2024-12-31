@@ -1,0 +1,26 @@
+/* 可在此處針對細節做客製化 */
+.link-button {
+  margin-bottom: 8px;
+}
+
+/* 讓下載連結看起來更像按鈕 */
+#download-link.btn.btn-success {
+  margin-top: 1rem;
+}
+
+/* 讓 textarea 高度再大一些 */
+#url-input {
+  min-height: 120px;
+}
+
+/* 隱藏 canvas 用於解析圖片 */
+#hidden-canvas {
+  display: none;
+}
+
+a {
+  text-decoration: none;
+}
+a:hover {
+  text-decoration: none;
+}
