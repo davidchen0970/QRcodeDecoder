@@ -15,9 +15,12 @@
 	--muted: #64748b;
 	--primary: #2563eb;
 	--primary-2: #1d4ed8;
+	--danger: #dc2626;
 	--soft: #eaf1ff;
-	--shadow: 0 12px 28px rgba(15, 23, 42, 0.08);
-	--radius: 16px;
+	--field: #fff;
+	--shadow: 0 18px 45px rgba(15, 23, 42, .14);
+	--radius: 18px;
+	color-scheme: light;
 }
 
 * { box-sizing: border-box; }
@@ -60,10 +63,12 @@ hr { border: 0; border-top: 1px solid var(--line); }
 	display: grid;
 	grid-template-columns: 1fr 1fr;
 	gap: 18px;
-	align-items: start;
+	align-items: stretch;
 }
 
 .subpanel {
+	display: flex;
+	flex-direction: column;
 	background: var(--panel);
 	border: 1px solid var(--line);
 	border-radius: var(--radius);
@@ -76,7 +81,7 @@ hr { border: 0; border-top: 1px solid var(--line); }
 /* ---------------- Generate card ---------------- */
 textarea {
 	width: 100%;
-	min-height: 140px;
+	min-height: 200px;
 	padding: 12px;
 	border: 1px solid var(--line);
 	border-radius: 11px;
@@ -100,22 +105,33 @@ textarea:focus {
 	margin: 16px 0 6px;
 }
 
+/* Left card: keep a gap between the textarea and the generate button now that the
+   subpanel stacks its children with flexbox (no margin collapse in flex). */
+#btn-generate { margin-top: 14px; }
+
 /* ---------------- Decode card ---------------- */
 .file-input {
-	display: block;
+	flex: 1 1 auto;
+	display: flex;
+	align-items: center;
+	justify-content: center;
 	width: 100%;
+	min-height: 60px;
+	margin: 6px 0 10px;
 	padding: 10px;
 	border: 1px solid var(--line);
 	border-radius: 11px;
-	background: var(--panel);
+	background: var(--panel-2);
 	color: var(--muted);
-	margin-bottom: 10px;
-	transition: border-color .2s;
+	text-align: center;
+	cursor: pointer;
+	transition: border-color .2s, background .2s, color .2s;
 }
+.file-input:hover { border-color: var(--primary); color: var(--primary); }
 #hidden-canvas { display: none; }
 
-/* ---------------- Buttons ---------------- */
-.btn-action {
+/* ---------------- Buttons (Redmine-style `.btn`) ---------------- */
+.btn {
 	display: inline-flex;
 	align-items: center;
 	justify-content: center;
@@ -127,30 +143,17 @@ textarea:focus {
 	color: var(--text);
 	background: var(--panel);
 	cursor: pointer;
+	text-decoration: none;
 	transition: border-color .2s, background .2s, color .2s, transform .15s ease;
 }
 /* Neutral button hover follows Redmine foundation.css button:hover:
    border and text turn the theme primary blue, and the button lifts 1px. */
-.btn-action:hover { border-color: var(--primary); color: var(--primary); transform: translateY(-1px); }
-.btn-action:active { transform: translateY(0); }
-.btn-action:focus-visible {
+.btn:hover { border-color: var(--primary); color: var(--primary); transform: translateY(-1px); }
+.btn:active { transform: translateY(0); }
+.btn:focus-visible {
 	outline: 2px solid var(--primary-2);
 	outline-offset: 2px;
 }
-/* Primary button: solid theme blue, mirroring Redmine foundation.css button.primary. */
-.btn-action.primary {
-	background: var(--primary);
-	border-color: var(--primary);
-	color: #fff;
-}
-.btn-action.primary:hover { background: var(--primary-2); border-color: var(--primary-2); color: #fff; transform: none; }
-/* Download link renders as a neutral button. */
-.btn-action.success {
-	background: #fff;
-	border-color: var(--line);
-	color: var(--text);
-}
-.btn-action.success:hover { border-color: var(--primary); color: var(--primary); }
 
 /* ---------------- Decoded links ---------------- */
 #links-container { display: grid; gap: 10px; }
@@ -171,19 +174,27 @@ textarea:focus {
 }
 .result-meta__label { font-size: 0.78rem; color: var(--muted); }
 
-/* Dynamically-created link buttons (scanner.js uses btn/info/w-100/link-button) */
-.btn.btn-info.w-100.link-button {
+/* Dynamically-created URL buttons (scanner.js uses btn/link-button).
+   Stack the "網址 n" label and the URL on two separate lines, left-aligned,
+   so long links stay readable and wrap instead of being cut off. */
+.btn.link-button {
+	flex-direction: column;
+	align-items: stretch;
+	width: 100%;
 	text-align: left;
-	padding: 11px 14px;
-	border-radius: 11px;
-	color: var(--text);
+	padding: 12px 14px;
 	background: var(--panel-2);
 	border: 1px solid var(--line);
 	font-weight: 500;
+	gap: 3px;
 }
-.btn.btn-info.w-100.link-button:hover {
-	border-color: var(--primary);
-	color: var(--primary);
+.btn.link-button .link-index {
+	font-size: 0.82rem;
+	color: var(--muted);
+	font-weight: 600;
+}
+.btn.link-button .link-url {
+	overflow-wrap: anywhere;
 }
 
 /* ---------------- Footer ---------------- */

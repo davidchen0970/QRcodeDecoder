@@ -48,8 +48,17 @@ export function renderScanResult(payload) {
 
 	urls.forEach((link, index) => {
 		const btn = document.createElement("button");
-		btn.classList.add("btn", "btn-info", "w-100", "link-button");
-		btn.textContent = `網址 ${index + 1}: ${link}`;
+		btn.classList.add("btn", "link-button");
+
+		const num = document.createElement("span");
+		num.className = "link-index";
+		num.textContent = `網址 ${index + 1}`;
+
+		const url = document.createElement("span");
+		url.className = "link-url";
+		url.textContent = link;
+
+		btn.append(num, url);
 		btn.onclick = () => {
 			window.open(link, "_blank");
 		};
