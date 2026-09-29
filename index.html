@@ -2,81 +2,88 @@
 <html lang="zh-TW">
 <head>
   <meta charset="UTF-8" />
-  <title>QR Code Decoder & Generator</title>
-  <!-- Bootstrap CSS -->
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>QR Code Decoder &amp; Generator</title>
   <!-- qrcodejs: QR generation -->
   <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js" defer></script>
   <!-- jsQR: QR recognition -->
-  <script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.js"defer></script>
+  <script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.js" defer></script>
 
-  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="style.css" />
 </head>
 
-<body class="bg-light">
+<body>
 
-<div class="container py-5">
-  <h1 class="mb-4 text-center" ><a href="https://davidchen0970.github.io/QRcodeDecoder/">QR Code Decoder & Generator</a></h1>
+<div class="shell">
+  <div class="container">
+    <header class="app-head">
+      <h1>QR Code Decoder &amp; Generator</h1>
+    </header>
 
-  <!-- Result area: shown when the URL carries a data param -->
-  <div id="decoded-section" class="card shadow-sm mb-4 d-none">
-    <div class="card-body">
-      <h2 class="h4">掃描結果</h2>
+    <!-- Result area: shown when the URL carries a data param -->
+    <section id="decoded-section" class="panel d-none">
+      <div class="panel__head">
+        <h2>掃描結果</h2>
+      </div>
       <hr />
-      <div id="info-section" class="mb-3">
-        <p>產生時間：<span id="gen-time"></span></p>
-        <p>網址數量：<span id="url-count"></span></p>
+      <div class="result-meta">
+        <div class="result-meta__item">
+          <span class="result-meta__label">產生時間</span>
+          <span id="gen-time">—</span>
+        </div>
+        <div class="result-meta__item">
+          <span class="result-meta__label">網址數量</span>
+          <span id="url-count">0</span>
+        </div>
       </div>
       <div id="links-container"></div>
-    </div>
-  </div>
+    </section>
 
-  <!-- Generate-QR area: shown when the URL carries no data param -->
-  <div id="generator-section" class="card shadow-sm mb-4 d-none">
-    <div class="card-body">
-      <h2 class="h4">產生特殊 QR code</h2>
-      <p class="mb-2">在下方輸入多個網址（每行一個），然後按「產生」即可：</p>
-      <textarea
-        id="url-input"
-        class="form-control"
-        placeholder="例如：
-https://www.google.com
+    <!-- Two cards: generate + decode, side by side, stacked on mobile.
+         Visible by default (not d-none) so the page never renders blank
+         if the module script is blocked (e.g. opened via file://). -->
+    <section id="generator-section">
+      <div class="split">
+
+        <div class="subpanel">
+          <h2>產生 QR code</h2>
+          <p class="subtitle">在下方輸入多個網址（每行一個），然後按「產生」即可：</p>
+          <textarea
+            id="url-input"
+            rows="6"
+            placeholder="https://www.google.com
 https://github.com
 https://..."
-      ></textarea>
-      <button id="btn-generate" class="btn btn-primary mt-3 w-100">
-        產生 QR code
-      </button>
-      <div class="d-flex justify-content-center my-4" id="qrcode"></div>
-      <a
-        id="download-link"
-        href="#"
-        download="qrcode.png"
-        class="btn btn-success w-100 d-none"
-      >
-        下載 QR code
-      </a>
+          ></textarea>
+          <button id="btn-generate" class="btn-action primary">產生 QR code</button>
+          <div id="qrcode"></div>
+          <a
+            id="download-link"
+            href="#"
+            download="qrcode.png"
+            class="btn-action success d-none"
+          >
+            下載 QR code
+          </a>
+        </div>
 
-      <hr class="my-4">
+        <div class="subpanel">
+          <h2>解析 QR code</h2>
+          <p class="subtitle">上傳 QR code 圖片，然後按「解析」即可：</p>
+          <input id="qr-upload" type="file" accept="image/*" class="file-input" />
+          <button id="btn-decode" class="btn-action">解析 QR code</button>
+          <canvas id="hidden-canvas"></canvas>
+        </div>
 
-      <h2 class="h4">上傳並解析 QR code</h2>
-      <p class="mb-2">上傳 QR code 圖片，然後按「解析」即可：</p>
-      <input type="file" id="qr-upload" accept="image/*" class="form-control mb-3" />
-      <button id="btn-decode" class="btn btn-secondary w-100">
-        解析 QR code
-      </button>
-      <canvas id="hidden-canvas"></canvas>
-    </div>
+      </div>
+    </section>
+
+    <footer class="app-foot">
+      <a href="https://github.com/davidchen0970/QRcodeDecoder" target="_blank" rel="noopener">View source</a>
+    </footer>
   </div>
 </div>
 
-
-<!-- Bootstrap JS (optional; only needed if you use more interactive widgets) -->
-<script
-  src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"
-  defer
-></script>
 <script type="module" src="src/main.js"></script>
-
 </body>
 </html>

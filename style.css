@@ -1,64 +1,218 @@
-/* 可在此處針對細節做客製化 */
-.link-button {
-  margin-bottom: 8px;
+/* ============================================================
+   QR Code Decoder & Generator - light theme, two side-by-side cards
+   ------------------------------------------------------------
+   Palette mirrors the RedmineTemplateEditor project.
+   The two main cards (generate / decode) sit side by side on
+   desktop and stack on top of each other on narrow screens.
+   ============================================================ */
+
+:root {
+	--bg: #f6f7fb;
+	--panel: #fff;
+	--panel-2: #f8fafc;
+	--line: #d7dde8;
+	--text: #172033;
+	--muted: #64748b;
+	--primary: #2563eb;
+	--primary-2: #1d4ed8;
+	--soft: #eaf1ff;
+	--shadow: 0 12px 28px rgba(15, 23, 42, 0.08);
+	--radius: 16px;
 }
 
-/* 讓下載連結看起來更像按鈕 */
-#download-link.btn.btn-success {
-  margin-top: 1rem;
+* { box-sizing: border-box; }
+
+html, body { margin: 0; padding: 0; }
+
+body {
+	background: var(--bg);
+	color: var(--text);
+	font-family: system-ui, -apple-system, "Segoe UI", "Noto Sans TC", "Microsoft JhengHei", sans-serif;
+	line-height: 1.6;
 }
 
-/* 讓 textarea 高度再大一些 */
-#url-input {
-  min-height: 120px;
+a { color: var(--primary); text-decoration: none; }
+a:hover { text-decoration: underline; }
+hr { border: 0; border-top: 1px solid var(--line); }
+
+/* The src/ modules toggle visibility via the `d-none` class. */
+.d-none { display: none !important; }
+
+.shell { padding: 40px 12px; }
+.container { max-width: 860px; margin: 0 auto; }
+
+/* ---------------- Header ---------------- */
+.app-head { margin-bottom: 22px; }
+.app-head h1 { margin: 0 0 6px; font-size: 1.5rem; font-weight: 600; }
+
+/* ---------------- Result panel (decode mode) ---------------- */
+.panel {
+	background: var(--panel);
+	border: 1px solid var(--line);
+	border-radius: var(--radius);
+	padding: 22px;
+	box-shadow: var(--shadow);
+}
+.panel__head h2 { margin: 0; font-size: 1.12rem; font-weight: 600; }
+
+/* ---------------- Two side-by-side cards ---------------- */
+.split {
+	display: grid;
+	grid-template-columns: 1fr 1fr;
+	gap: 18px;
+	align-items: start;
 }
 
-/* 隱藏 canvas 用於解析圖片 */
-#hidden-canvas {
-  display: none;
+.subpanel {
+	background: var(--panel);
+	border: 1px solid var(--line);
+	border-radius: var(--radius);
+	padding: 20px;
+	box-shadow: var(--shadow);
+}
+.subpanel h2 { margin: 0 0 4px; font-size: 1.08rem; font-weight: 600; }
+.subtitle { margin: 0 0 12px; color: var(--muted); font-size: 0.92rem; }
+
+/* ---------------- Generate card ---------------- */
+textarea {
+	width: 100%;
+	min-height: 140px;
+	padding: 12px;
+	border: 1px solid var(--line);
+	border-radius: 11px;
+	color: var(--text);
+	background: var(--panel-2);
+	font: inherit;
+	resize: vertical;
+	transition: border-color .2s, background .2s, box-shadow .2s;
+}
+textarea:focus {
+	outline: none;
+	border-color: var(--primary);
+	background: var(--panel);
+	box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
 }
 
-a {
-  text-decoration: none;
+#qrcode {
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	margin: 16px 0 6px;
 }
-a:hover {
-  text-decoration: none;
+
+/* ---------------- Decode card ---------------- */
+.file-input {
+	display: block;
+	width: 100%;
+	padding: 10px;
+	border: 1px solid var(--line);
+	border-radius: 11px;
+	background: var(--panel);
+	color: var(--muted);
+	margin-bottom: 10px;
+	transition: border-color .2s;
+}
+#hidden-canvas { display: none; }
+
+/* ---------------- Buttons ---------------- */
+.btn-action {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	width: 100%;
+	border: 1px solid var(--line);
+	border-radius: 11px;
+	padding: 12px;
+	font: inherit;
+	color: var(--text);
+	background: var(--panel);
+	cursor: pointer;
+	transition: border-color .2s, background .2s, color .2s, transform .15s ease;
+}
+/* Neutral button hover follows Redmine foundation.css button:hover:
+   border and text turn the theme primary blue, and the button lifts 1px. */
+.btn-action:hover { border-color: var(--primary); color: var(--primary); transform: translateY(-1px); }
+.btn-action:active { transform: translateY(0); }
+.btn-action:focus-visible {
+	outline: 2px solid var(--primary-2);
+	outline-offset: 2px;
+}
+/* Primary button: solid theme blue, mirroring Redmine foundation.css button.primary. */
+.btn-action.primary {
+	background: var(--primary);
+	border-color: var(--primary);
+	color: #fff;
+}
+.btn-action.primary:hover { background: var(--primary-2); border-color: var(--primary-2); color: #fff; transform: none; }
+/* Download link renders as a neutral button. */
+.btn-action.success {
+	background: #fff;
+	border-color: var(--line);
+	color: var(--text);
+}
+.btn-action.success:hover { border-color: var(--primary); color: var(--primary); }
+
+/* ---------------- Decoded links ---------------- */
+#links-container { display: grid; gap: 10px; }
+.result-meta {
+	display: grid;
+	grid-template-columns: 1fr 1fr;
+	gap: 14px;
+	margin-bottom: 16px;
+}
+.result-meta__item {
+	display: flex;
+	flex-direction: column;
+	gap: 2px;
+	padding: 12px 14px;
+	border: 1px solid var(--line);
+	border-radius: 11px;
+	background: var(--panel-2);
+}
+.result-meta__label { font-size: 0.78rem; color: var(--muted); }
+
+/* Dynamically-created link buttons (scanner.js uses btn/info/w-100/link-button) */
+.btn.btn-info.w-100.link-button {
+	text-align: left;
+	padding: 11px 14px;
+	border-radius: 11px;
+	color: var(--text);
+	background: var(--panel-2);
+	border: 1px solid var(--line);
+	font-weight: 500;
+}
+.btn.btn-info.w-100.link-button:hover {
+	border-color: var(--primary);
+	color: var(--primary);
 }
 
+/* ---------------- Footer ---------------- */
+.app-foot {
+	margin-top: 26px;
+	padding-top: 18px;
+	border-top: 1px solid var(--line);
+	color: var(--muted);
+	font-size: 0.9rem;
+}
 
-  .snowflake {
-    position: absolute;
-    top: -10px;
-    font-size: 1rem;
-    color: white;
-    opacity: 0.8;
-    animation: fall linear infinite;
-  }
+/* ---------------- Snowfall (easter-egg CSS contract) ---------------- */
+.snowflake {
+	position: absolute;
+	top: -10px;
+	color: #bfdbfe;
+	opacity: 0.8;
+	animation: fall linear infinite;
+	pointer-events: none;
+	z-index: 5;
+}
+@keyframes fall {
+	0%   { transform: translateY(0) translateX(0); opacity: 0.8; }
+	100% { transform: translateY(95vh) translateX(20px); opacity: 0.15; }
+}
 
-  @keyframes fall {
-    0% {
-      transform: translateY(0) translateX(0);
-      opacity: 0.8;
-    }
-    100% {
-      transform: translateY(95vh) translateX(20px);
-      opacity: 0.2;
-    }
-  }
-
-  .christmas-tree {
-    text-align: center;
-    font-family: monospace;
-    color: green;
-    margin-top: 20vh;
-  }
-
-  .christmas-tree pre {
-    display: inline-block;
-    line-height: 1.2;
-  }
-
-  .message {
-    margin-top: 20px;
-    font-size: 1.5rem;
-  }
+/* ---------------- Mobile: stack the two cards ---------------- */
+@media (max-width: 720px) {
+	.split { grid-template-columns: 1fr; }
+	.result-meta { grid-template-columns: 1fr; }
+	.shell { padding: 24px 10px; }
+}
